@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 
+function logMessage() {
+    local message=$1
+    local time
+    time=$(date +%H:%M:%S)
+    echo "[$time] $message"
+}
+
 function computeRelativePositions() {
     # game_window=$(hyprctl clients -j | jq -c '.[] | select(.title == "Cornerpond")')
     game_window=$(hyprctl clients -j | jq -c '.[] | select(.class == "steam_app_3454590")')
+    if [ -z "$game_window" ]; then
+        echo "failed to locate Cornerpond game window, exiting."
+        exit 1
+    fi
+
     gw_pos_x=$(echo "$game_window" | jq '.at[0]')
     gw_pos_y=$(echo "$game_window" | jq '.at[1]')
 
@@ -66,27 +78,28 @@ if [[ "$1" = "-h" || "$1" = "--help" ]]; then
     exit 0
 fi
 
+
 if [[ "$1" = "-l" || "$1" = "--loop" ]]; then
     showBanner
 
     counter=0
-    echo "♾️ Starting infinite loop (stop with CTRL+C)"
+    logMessage "♾️ Starting infinite loop (stop with CTRL+C)"
     sleep 1s
 
     while true; do
-        echo "🎣 READY? (5s)" 
+        logMessage "🎣 READY? (5s)" 
         sleep 5s
-        echo "🐟 Executing automation! $counter"
+        logMessage "🐟 Executing automation! $counter"
         fullAutomate
-        echo "😴 Sleep for 60s..."
+        logMessage "😴 Sleep for 60s..."
         sleep 60s
         ((counter++))
     done
 elif [[ "$1" = "-o" || "$1" = "--once" ]]; then
     showBanner
-    echo "✨ Executing automation once..."
+    logMessage "✨ Executing automation once..."
     fullAutomate
-    echo "✅ Automation END"
+    logMessage "✅ Automation END"
 else
     echo "unknown option: $1"
     showHelp
